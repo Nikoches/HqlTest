@@ -36,7 +36,7 @@ public class HbmRun {
         session.close();
     }
     protected void printAll() {
-        Query query = session.createQuery("from candidates ");
+        Query query = session.createQuery("from candidates where salary < 100");
         for (Object st : query.list()) {
             System.out.println(st);
         }
