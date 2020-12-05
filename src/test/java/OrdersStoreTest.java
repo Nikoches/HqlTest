@@ -1,4 +1,5 @@
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,10 +15,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class OrdersStoreTest {
-    private final BasicDataSource pool = new BasicDataSource();
+    private static final BasicDataSource pool = new BasicDataSource();
 
-    @BeforeEach
-    public void setUp() throws SQLException, IOException {
+    @BeforeAll
+    public static void setUp() throws SQLException, IOException {
         pool.setDriverClassName("org.hsqldb.jdbcDriver");
         pool.setUrl("jdbc:hsqldb:mem:tests;sql.syntax_pgs=true");
         pool.setUsername("sa");
@@ -34,11 +35,8 @@ public class OrdersStoreTest {
     @Test
     public void whenSaveOrderAndFindAllOneRowWithDescription() {
         OrdersStore store = new OrdersStore(pool);
-
         store.save(Order.of("name1", "description1"));
-
         List<Order> all = (List<Order>) store.findAll();
-
         assertEquals(all.size(), (1));
         assertEquals(all.get(0).getDescription(), "description1");
         assertEquals(all.get(0).getId(), (1));
@@ -48,7 +46,7 @@ public class OrdersStoreTest {
     public void whenSaveOrderAndFindByName() {
         OrdersStore store = new OrdersStore(pool);
         store.save(Order.of("test1", "description1"));
-        Order order = new Order(1, "test1", "description1", new Timestamp(1607079986));
+        Order order = new Order(2, "test1", "description1", new Timestamp(1607079986));
         assertEquals(store.findByName("test1"), order);
     }
 
