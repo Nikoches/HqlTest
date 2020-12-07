@@ -1,4 +1,5 @@
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,10 +16,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class OrdersStoreTest {
-    private static final BasicDataSource pool = new BasicDataSource();
+    private final BasicDataSource pool = new BasicDataSource();
 
-    @BeforeAll
-    public static void setUp() throws SQLException, IOException {
+    @BeforeEach
+    public void setUp() throws SQLException, IOException {
         pool.setDriverClassName("org.hsqldb.jdbcDriver");
         pool.setUrl("jdbc:hsqldb:mem:tests;sql.syntax_pgs=true");
         pool.setUsername("sa");
@@ -26,10 +27,14 @@ public class OrdersStoreTest {
         pool.setMaxTotal(2);
         StringBuilder builder = new StringBuilder();
         File file = new File("db/dbGenerate");
-        file.canRead();
         List<String> strings = Files.readAllLines(Path.of(("db/dbGenerate")));
         strings.forEach(line -> builder.append(line).append(System.lineSeparator()));
         pool.getConnection().prepareStatement(builder.toString()).executeUpdate();
+    }
+
+    @AfterEach
+    public void droptable() throws SQLException {
+       pool.getConnection().prepareStatement("drop table orders").executeUpdate();
     }
 
     @Test
@@ -46,7 +51,7 @@ public class OrdersStoreTest {
     public void whenSaveOrderAndFindByName() {
         OrdersStore store = new OrdersStore(pool);
         store.save(Order.of("test1", "description1"));
-        Order order = new Order(2, "test1", "description1", new Timestamp(1607079986));
+        Order order = new Order(1, "test1", "description1", new Timestamp(1607079986));
         assertEquals(store.findByName("test1"), order);
     }
 
@@ -55,7 +60,7 @@ public class OrdersStoreTest {
         OrdersStore store = new OrdersStore(pool);
         store.save(Order.of("test1", "description1"));
         Order order = new Order(1, "test2", "description2", new Timestamp(1607079986));
-        store.updateById(1,"test2","description2");
+        store.updateById(1, "test2", "description2");
         assertEquals(store.findByName("test2"), order);
     }
 }
